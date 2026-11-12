@@ -347,6 +347,36 @@ html,body{overscroll-behavior-x:none}
 .camera-bottom .camera-shutter{width:61px;height:61px;min-width:61px;min-height:61px}
 .camera-screen .camera-message{font-size:9px}
 }
+
+/* Telefon: jedna przewijana strona i szybki dostęp do głównych części. */
+.mobile-nav{display:none}
+@media(max-width:680px){
+ html,body{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:auto}
+ body{padding-bottom:76px}
+ header{height:auto;min-height:0;padding:10px 12px;gap:9px;align-items:center}
+ .brand{flex-basis:100%}.top-actions{width:100%;justify-content:flex-start;gap:6px}
+ .top-actions .btn,.top-actions .tool-pop>summary{min-height:40px;padding:9px 10px;font-size:10px}
+ .layout{height:auto;overflow:visible;display:flex;flex-direction:column}
+ .workspace{height:auto;min-height:0;overflow:visible;display:block;order:1}
+ .workspace-main{height:auto;min-height:0;display:block;overflow:visible;padding:9px}
+ .preview-shell{height:clamp(250px,42dvh,420px);min-height:250px;max-height:none}
+ .bottomline{min-height:32px}.studio-splitter{display:none}
+ .pipeline-deck{height:auto;max-height:none;min-height:0;display:block;overflow:visible;margin-top:10px}
+ .pipeline-tabs{display:flex!important;position:relative;gap:6px;margin-bottom:8px}
+ .pipeline-tabs button{flex:1;min-height:44px;font-size:11px}
+ .pipeline-main,.pipeline-data{height:auto;max-height:none;overflow:visible;overscroll-behavior:auto;padding:10px}
+ .pipeline-main>.section>.section-head,.pipeline-data>.pipeline-section-title{position:static;margin:0 0 10px;padding:8px 0}
+ .sidebar.scrollpanel{height:auto;max-height:none;overflow:visible;order:2;scroll-margin-top:10px}
+ .pipeline-main,.pipeline-data,#previewShell,.sidebar,.library-section{scroll-margin-top:10px}
+ .stack-palette .add-chip{min-height:42px;font-size:10px}
+ .mini-btn,.stack-actions button{min-height:38px}
+ .queue-list,.library-list,.history-list{max-height:none;overflow:visible}
+ .mobile-nav{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;z-index:1000;bottom:0;left:0;right:0;gap:3px;padding:6px 7px;background:#101714f2;border-top:1px solid #52634c;box-shadow:0 -4px 20px #0009}
+ .mobile-nav button{min-height:48px;border:0;border-radius:6px;background:#222d23;color:#dce8d7;font:10px var(--mono);padding:5px 2px}
+ .mobile-nav button:active{background:#c7ff4a;color:#101510}
+ .mini-preview.visible{bottom:70px}
+}
+
 </style>
 </head>
 <body>
@@ -1505,9 +1535,16 @@ function setupStudioSplit(){
  bar.addEventListener('pointerdown',e=>{if(e.button!==0)return;e.preventDefault();bar.setPointerCapture(e.pointerId);const move=ev=>{const r=bounds();setShare((ev.clientY-r.top)/r.h)};const end=()=>{bar.removeEventListener('pointermove',move);bar.removeEventListener('pointerup',end);bar.removeEventListener('pointercancel',end)};bar.addEventListener('pointermove',move);bar.addEventListener('pointerup',end);bar.addEventListener('pointercancel',end)});
  bar.addEventListener('keydown',e=>{if(e.key!=='ArrowUp'&&e.key!=='ArrowDown'&&e.key!=='Home'&&e.key!=='End')return;e.preventDefault();const cur=parseFloat(getComputedStyle(ws).getPropertyValue('--preview-share'))/100||.52;setShare(e.key==='Home'?.24:e.key==='End'?.70:cur+(e.key==='ArrowDown'?.04:-.04))});
 }
+
+function installMobileNavigation(){
+ const nav=document.createElement('nav');nav.className='mobile-nav';nav.setAttribute('aria-label','Nawigacja edytora');
+ const items=[['◉','Podgląd',()=>document.getElementById('previewShell')],['✣','Efekty',()=>document.querySelector('.library-section')],['≡','Stos',()=>{document.getElementById('showPipeline').click();return document.getElementById('pipelineDeck')}],['▧','Kolejka',()=>document.getElementById('batchQueue')]];
+ items.forEach(([icon,label,target])=>{const b=document.createElement('button');b.type='button';b.innerHTML='<span aria-hidden="true">'+icon+'</span><br>'+label;b.addEventListener('click',()=>target()?.scrollIntoView({behavior:'smooth',block:'start'}));nav.append(b)});document.body.append(nav);
+}
+
 function syncStudioHeaderHeight(){const h=document.querySelector('header')?.getBoundingClientRect().height||62;document.documentElement.style.setProperty('--mobile-header-height',h+'px')}
 
-organizeStudioUI();initEditorialSessions();setupStudioSplit();labSetup();syncStudioHeaderHeight();window.addEventListener('resize',syncStudioHeaderHeight);imageSource=drawDemo();buildPaletteUI();loadSteps([]);buildStackUI();refreshStackPresetsUI();readLibrary();renderLibraryUI();updateBatchUI();syncUI();applySource();ready=true;setupMiniPreview();$('miniJump').addEventListener('click',()=>{$('previewShell').scrollIntoView({behavior:'smooth',block:'center'})});scheduleRender(true); /* start with an intentionally empty effect stack */
+organizeStudioUI();installMobileNavigation();initEditorialSessions();setupStudioSplit();labSetup();syncStudioHeaderHeight();window.addEventListener('resize',syncStudioHeaderHeight);imageSource=drawDemo();buildPaletteUI();loadSteps([]);buildStackUI();refreshStackPresetsUI();readLibrary();renderLibraryUI();updateBatchUI();syncUI();applySource();ready=true;setupMiniPreview();$('miniJump').addEventListener('click',()=>{$('previewShell').scrollIntoView({behavior:'smooth',block:'center'})});scheduleRender(true); /* start with an intentionally empty effect stack */
 
 /* GLITCH / CAMERA v33: permission-aware LIVE preview with an independent Android system-camera fallback.
  * Camera capture works via <input capture> even when getUserMedia is blocked in a preview iframe/WebView.

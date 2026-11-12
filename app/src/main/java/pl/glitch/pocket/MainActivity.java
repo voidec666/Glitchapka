@@ -20,6 +20,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+import android.widget.FrameLayout;
 import java.io.OutputStream;
 import java.util.Arrays;
 
@@ -33,7 +34,14 @@ public class MainActivity extends Activity {
 
   @Override public void onCreate(Bundle state) {
     super.onCreate(state);
-    web = new WebView(this); setContentView(web);
+    FrameLayout root = new FrameLayout(this);
+    root.setBackgroundColor(android.graphics.Color.rgb(13,16,16));
+    root.setOnApplyWindowInsetsListener((view, insets) -> {
+      view.setPadding(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(), insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
+      return insets;
+    });
+    web = new WebView(this); root.addView(web, new FrameLayout.LayoutParams(-1, -1)); setContentView(root);
+    root.requestApplyInsets();
     WebSettings settings = web.getSettings();
     settings.setJavaScriptEnabled(true); settings.setDomStorageEnabled(true);
     settings.setAllowFileAccess(false); settings.setAllowContentAccess(true);
