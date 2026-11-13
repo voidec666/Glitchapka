@@ -54,6 +54,9 @@ public class MainActivity extends Activity {
       }
       @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
         Uri u = request.getUrl();
+        // Android's document picker returns content:// URIs with a temporary read grant.
+        // Let WebView read these locally; all other non-local origins remain blocked.
+        if ("content".equals(u.getScheme()) || "blob".equals(u.getScheme())) return null;
         if (!"https".equals(u.getScheme()) || !HOST.equals(u.getHost())) return new WebResourceResponse("text/plain", "UTF-8", 403, "Forbidden", null, null);
         if (!"/assets/index.html".equals(u.getPath())) return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found", null, null);
         try { return new WebResourceResponse("text/html", "UTF-8", getAssets().open("index.html")); }
@@ -72,8 +75,8 @@ public class MainActivity extends Activity {
       @Override public void onPermissionRequestCanceled(PermissionRequest req) { if (cameraRequest == req) cameraRequest = null; }
       @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> cb, FileChooserParams params) {
         if (fileCallback != null) fileCallback.onReceiveValue(null); fileCallback = cb;
-        try { startActivityForResult(params.createIntent(), FILE_PICKER); return true; }
-        catch (Exception e) { fileCallback = null; cb.onReceiveValue(null); return false; }
+        try { Intent intent = params.createIntent(); intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); startActivityForResult(intent, FILE_PICKER); return true; }
+        catch (Exception e) { fileCallback = null; cb.onReceiveValue(null); return true; }
       }
     });
     web.loadUrl(HOME);
@@ -87,7 +90,18 @@ public class MainActivity extends Activity {
   }
   @Override protected void onActivityResult(int request, int result, Intent data) {
     super.onActivityResult(request, result, data);
-    if (request == FILE_PICKER && fileCallback != null) { fileCallback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(result, data)); fileCallback = null; }
+    if (request == FILE_PICKER && fileCallback != null) {
+      ValueCallback<Uri[]> callback = fileCallback; fileCallback = null;
+      Uri[] selected = null;
+      if (result == RESULT_OK && data != null) {
+        if (data.getClipData() != null) {
+          int count = data.getClipData().getItemCount(); selected = new Uri[count];
+          for (int i = 0; i < count; i++) selected[i] = data.getClipData().getItemAt(i).getUri();
+        } else if (data.getData() != null) selected = new Uri[]{data.getData()};
+        else selected = WebChromeClient.FileChooserParams.parseResult(result, data);
+      }
+      callback.onReceiveValue(selected);
+    }
   }
   @Override public void onBackPressed() { if (web.canGoBack()) web.goBack(); else super.onBackPressed(); }
   @Override protected void onDestroy() { if (cameraRequest != null) cameraRequest.deny(); if (fileCallback != null) fileCallback.onReceiveValue(null); web.destroy(); super.onDestroy(); }

@@ -9,6 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check editor image import and camera transfer
+        run: |
+          npm install --no-save --no-package-lock playwright-core@1.56.1
+          node tests/editor-smoke.cjs
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

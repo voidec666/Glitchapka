@@ -606,13 +606,13 @@ function removeBatchItem(index){
 }
 async function loadBatchFiles(files){
  if(batchExportBusy){showNotice('Najpierw zakończ eksport partii.',true);return}
- const list=[...files].filter(f=>f&&f.type.startsWith('image/'));
+ const list=[...files].filter(f=>f&&(f.type.startsWith('image/')||(!f.type&&/\.(jpe?g|png|webp|avif|heic|heif|gif|bmp)$/i.test(f.name))));
  if(!list.length){showNotice('Nie znaleziono obsługiwanych plików obrazu.',true);return}
  const loaded=list.map(file=>({file,bitmap:null}));
- const previous=batchItems;batchItems=loaded;activeBatchIndex=-1;updateBatchUI();
- try{await setActiveBatch(0)}catch(err){showNotice('Pierwsze zdjęcie nie zostało odczytane. Wybierz inne.',true)}
+ const previous=batchItems,previousIndex=activeBatchIndex;batchItems=loaded;activeBatchIndex=-1;updateBatchUI();
+ try{await setActiveBatch(0)}catch(err){batchItems=previous;activeBatchIndex=previousIndex;updateBatchUI();showNotice('Nie udało się odczytać zdjęcia: '+err.message+'. Spróbuj JPEG lub PNG.',true);return false}
  for(const old of previous)if(old.bitmap&&old.bitmap!==imageSource)old.bitmap.close?.();
- showNotice('Wczytano '+loaded.length+' zdjęć do kolejki (dekodowanie pojedynczo).');
+ showNotice('Wczytano '+loaded.length+' zdjęć do kolejki (dekodowanie pojedynczo).');return true;
 }
 let batchExportBusy=false;
 async function exportBatch(){
@@ -1082,7 +1082,7 @@ function renderHexStream(){const root=$('hexBox');if(!root)return;root.replaceCh
  for(let r=0;r<Math.ceil(count/16);r++){const ordinal=hexPageStart+r*16,row=document.createElement('div');row.className='hex-row';const marker=document.createElement('span');marker.className='hex-offset';marker.textContent=formatHex(entropyFileOffset(ordinal));const data=document.createElement('div');data.className='hex-data';for(let c=0;c<16&&ordinal+c<hexPageStart+count;c++){const idx=ordinal+c,offset=entropyFileOffset(idx),byte=document.createElement('span');byte.className='hex-byte';byte.dataset.entropyIndex=String(idx);byte.title=`Bajt ${idx} / offset pliku ${formatHex(offset)}`;byte.textContent=(view.mutated?.bytes[offset]??view.bytes[offset]).toString(16).toUpperCase().padStart(2,'0');byte.classList.toggle('selected-byte',idx>=selLo&&idx<selHi);byte.classList.toggle('mutated-byte',view.changed.has(offset));data.append(byte)}row.append(marker,data);frag.append(row)}root.append(frag);
  $('hexPageInfo').textContent=(hexPageStart+1).toLocaleString('pl-PL')+'–'+(hexPageStart+count).toLocaleString('pl-PL')+' / '+total.toLocaleString('pl-PL');
 }
-function applyViewFromJPEG(baseBytes,mutation){entropyView=buildEntropyView(baseBytes,mutation);makeStrip();renderHexStream()}
+function applyViewFromJPEG(baseBytes,mutation){if(entropyView&&entropyView.bytes===baseBytes&&!entropyView.mutated&&!mutation)return;entropyView=buildEntropyView(baseBytes,mutation);makeStrip();renderHexStream()}
 function reportJPEG(result,decoded,byteActive){changedCount=result.changed;entropyLength=result.len;$('changedBytes').textContent=String(result.changed).padStart(4,'0');$('bytePercent').textContent=(result.len?result.changed/result.len*100:0).toFixed(3)+'% ENTROPY STREAM';$('jpegStatus').textContent=!byteActive?'BYPASS':!result.changed?'NO MUTATION':decoded?'DECODED ✓':'DECODE FAILED';$('jpegStatus').style.color=(!decoded&&result.changed)?'var(--coral)':'var(--accent)';$('jpegDetail').textContent=!byteActive?'Brak aktywnej instancji JPEG BYTE BEND':!result.changed?'Brak zmian w strumieniu':decoded?'Zmodyfikowany JPEG odkodowany':'Zachowano obraz sprzed mutacji';$('byteBar').style.width=(result.len?clamp(result.changed/result.len*2500,0,100):0)+'%';$('byteBarLabel').textContent=(result.len?result.changed/result.len*100:0).toFixed(2)+'%';const levels=stackSteps.filter(step=>!step.bypass).map(step=>Number(step.params?.[effectRegistry[step.type].amount]||0));const pixelLevel=Math.round(master()*(levels.length?levels.reduce((a,b)=>a+b,0)/levels.length:0));$('pixelBar').style.width=pixelLevel+'%';$('pixelBarLabel').textContent=pixelLevel+'%'}
 
 let stripDragAnchor=null,hexDragAnchor=null;
@@ -1256,7 +1256,8 @@ async function render(){
  const seed=(geti('seed')>>>0)||1,strength=master();rawPNG=null;pngChanged=0;PNGWarning='';rawJPEG=null;const cropStep=stackSteps.find(step=>step.type==='crop'&&effectIsActive(step));const [baseW,baseH]=scaledSize(imageSource.width,imageSource.height);const baseCanvas=makeBaseCanvasWithCrop(baseW,baseH,cropStep);const w=baseCanvas.width,h=baseCanvas.height;if(w!==workW||h!==workH)setStage(w,h);octx.clearRect(0,0,w,h);octx.drawImage(baseCanvas,0,0,w,h);ctx.clearRect(0,0,w,h);ctx.drawImage(baseCanvas,0,0,w,h);
  let mutation={bytes:new Uint8Array([0]),changed:0,len:0,firstPos:0,positions:[]},decoded=true,byteTouched=false,viewBaseBytes=null;
  let donorBytes=null, donorCanvas=null;
- if(donorData)donorBytes=donorData;else if(donorSource){donorCanvas=newCanvas(w,h,donorSource);donorBytes=new Uint8Array(await (await toBlobAsync(donorCanvas,'image/jpeg',geti('quality'))).arrayBuffer())}
+ const needsDonor=stackSteps.some(step=>step.type==='byte'&&effectIsActive(step)&&['graft','xor2'].includes(step.params?.byteMode));
+ if(needsDonor&&donorData)donorBytes=donorData;else if(needsDonor&&donorSource){donorCanvas=newCanvas(w,h,donorSource);donorBytes=new Uint8Array(await (await toBlobAsync(donorCanvas,'image/jpeg',geti('quality'))).arrayBuffer())}
  const scratch=document.createElement('canvas');scratch.width=w;scratch.height=h;const sctx=scratch.getContext('2d',{willReadFrequently:true});
  const copyOutToScratch=()=>{sctx.clearRect(0,0,w,h);sctx.drawImage(out,0,0,w,h);return scratch};
  const activeSteps=stackSteps.filter(step=>effectIsActive(step));
@@ -1329,7 +1330,7 @@ async function render(){
 }
 function rerollSeed(){let n=geti('seed');$('seed').value=(Math.imul(n+1,1664525)+1013904223>>>0)%999999999;activePreset=-1;document.querySelectorAll('.preset').forEach(e=>e.classList.remove('selected'));scheduleRender()}
 async function uploadFile(file){if(!file)return;return loadBatchFiles([file])}
-$('upload').addEventListener('change',e=>{loadBatchFiles(e.target.files||[]);e.target.value='' });
+$('upload').addEventListener('change',async e=>{const input=e.target,files=Array.from(input.files||[]);try{await loadBatchFiles(files)}catch(err){showNotice('Nie udało się wczytać zdjęcia: '+err.message,true)}finally{input.value=''}});
 initCropOverlay();
 $('donorBtn').addEventListener('click',()=>$('donorInput').click());$('clearDonor').addEventListener('click',()=>{donorSource?.close?.();donorSource=null;donorFile=null;donorData=null;$('donorInfo').textContent='Bez donora: miksowanie bajtów tego samego JPEG';scheduleRender()});$('donorInput').addEventListener('change',async e=>{const f=e.target.files?.[0];e.target.value='';if(!f)return;try{donorSource?.close?.();donorSource=null;donorData=null;donorFile=f;if(f.type.startsWith('image/')){try{donorSource=await loadBitmap(f)}catch(error){donorData=new Uint8Array(await f.slice(0,8388608).arrayBuffer())}}else{donorData=new Uint8Array(await f.slice(0,8388608).arrayBuffer())}if(donorData&&donorData.length<64)throw new Error('Plik donor musi mieć co najmniej 64 bajty');$('donorInfo').textContent='DONOR: '+f.name+' / '+(donorSource?'obraz '+donorSource.width+'×'+donorSource.height:'surowe bajty '+donorData.length.toLocaleString('pl-PL'));scheduleRender()}catch(err){donorData=null;showNotice('Nie udało się wczytać pliku-donora: '+err.message,true)}});$('chooseBtn').addEventListener('click',()=>$('upload').click());$('dropzone').addEventListener('click',e=>{if(e.target===$('dropzone'))$('upload').click()});
 for(const e of ['dragenter','dragover'])document.addEventListener(e,ev=>{if(ev.dataTransfer?.types?.includes('Files')){ev.preventDefault();$('dropzone').classList.add('is-over')}});for(const e of ['dragleave','drop'])document.addEventListener(e,ev=>{ev.preventDefault();$('dropzone').classList.remove('is-over');if(e==='drop'&&ev.dataTransfer?.files?.length)uploadFile(ev.dataTransfer.files[0])});
