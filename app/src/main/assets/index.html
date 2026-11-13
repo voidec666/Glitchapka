@@ -377,6 +377,51 @@ html,body{overscroll-behavior-x:none}
  .mini-preview.visible{bottom:70px}
 }
 
+/* Atelier: a separate, phone-first presentation over the existing editor. */
+.atelier-top,.atelier-nav,.atelier-sheet-head,.atelier-quick,.atelier-toast{display:none}
+@media(max-width:680px){
+ html,body{height:100%;min-height:0;overflow:hidden;background:#e9ebe4;color:#181b18}
+ body{padding:0;font-family:Arial,Helvetica,sans-serif}
+ body>header,.mobile-nav,.footer-note,.studio-splitter,.mini-preview{display:none!important}
+ .layout{display:block;height:100dvh;overflow:hidden}
+ .workspace{height:100%;min-height:0;display:block;overflow:hidden}
+ .workspace-main{position:relative;display:block;height:100%;padding:74px 12px 110px;overflow:hidden}
+ .preview-shell{height:calc(100dvh - 220px);min-height:180px;max-height:none;background:#151918;border:0;border-radius:4px;overflow:hidden}
+ .preview-shell:after{border-width:0}.preview-shell:before{opacity:.09;background-size:28px 28px}
+ .image-stage{max-width:calc(100% - 22px);max-height:calc(100% - 22px);box-shadow:0 10px 36px #0008}
+ .compare-tip{top:10px;left:10px;font-size:8px;padding:5px;background:#101514ad}
+ .picture-label{bottom:8px;font-size:8px}.zoom-tools{top:8px;right:8px}
+ .bottomline{height:29px;min-height:29px;padding:5px 2px;color:#697068;font-size:8px;overflow:hidden}
+ .bottomline .readout{color:#38423a}.bottomline .pulse{background:#4b7540;box-shadow:none}
+ .atelier-top{display:flex;position:fixed;z-index:1200;top:0;left:0;right:0;height:66px;align-items:center;gap:10px;padding:8px 14px;background:#e9ebe4;border-bottom:1px solid #c9cec4}
+ .atelier-brand{min-width:0;flex:1;line-height:1}.atelier-brand strong{display:block;color:#171b18;font-size:18px;letter-spacing:-1px;font-weight:900}.atelier-brand strong span{color:#819a41}.atelier-brand small{display:block;margin-top:4px;color:#788076;font:8px var(--mono);letter-spacing:.13em}
+ .atelier-top button{height:38px;min-width:39px;padding:0 10px;border:1px solid #c7cdc3;border-radius:11px;background:#f4f5ef;color:#252b25;font-size:16px;line-height:1}
+ .atelier-top .atelier-save{background:#202820;border-color:#202820;color:#ecf7e1;font:700 10px var(--mono);letter-spacing:.04em}
+ .atelier-quick{display:flex;align-items:center;gap:7px;margin:2px 0 0;overflow-x:auto;scrollbar-width:none}
+ .atelier-quick button{flex:0 0 auto;min-height:34px;padding:7px 12px;border:1px solid #c8cec2;border-radius:30px;color:#293029;background:transparent;font:10px var(--mono)}
+ .atelier-quick button:active{background:#c9e89b}
+ .atelier-nav{position:fixed;z-index:1300;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(4,1fr);height:72px;padding:5px 9px 7px;background:#f3f4ee;border-top:1px solid #ccd1c7}
+ .atelier-nav button{border:0;border-radius:11px;background:transparent;color:#6a7369;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:9px var(--mono);letter-spacing:.02em}
+ .atelier-nav button b{font:normal 21px/19px Arial;color:#485349}.atelier-nav button[aria-selected=true]{background:#dcebc7;color:#263520}.atelier-nav button[aria-selected=true] b{color:#334b26}
+ .sidebar.scrollpanel,.pipeline-deck{display:none!important;position:fixed!important;z-index:1250!important;top:calc(35dvh + 48px)!important;bottom:72px!important;left:0!important;right:0!important;width:auto!important;height:auto!important;max-height:none!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#141a17;overflow-y:auto!important;overscroll-behavior:contain;box-shadow:0 20px 36px #0004}
+ body[data-atelier-panel=effects] .sidebar.scrollpanel,body[data-atelier-panel=queue] .sidebar.scrollpanel{display:block!important}
+ body[data-atelier-panel=stack] .pipeline-deck,body[data-atelier-panel=library] .pipeline-deck,body[data-atelier-panel=more] .pipeline-deck{display:block!important}
+ .sidebar-inner{padding:13px 17px 32px}.library-title{font:700 12px var(--mono);letter-spacing:.08em}.library-caption{font-size:10px}
+ .stack-palette .folder-body{grid-template-columns:1fr 1fr;gap:6px}.stack-palette .add-chip{min-height:44px;border-radius:8px}
+ .stack-palette details,.left-fold,.queue-item,.lib-item{border-radius:10px}
+ .pipeline-tabs{display:none!important}
+ .pipeline-main,.pipeline-data{height:auto;min-height:0;max-height:none;padding:14px 17px 32px;border:0;overflow:visible}
+ .pipeline-main>.section>.section-head,.pipeline-data>.pipeline-section-title{position:static}
+ .pipeline-deck .pipeline-main{display:block!important}.pipeline-deck .pipeline-data{display:none!important}
+ .pipeline-deck.mode-data .pipeline-main{display:none!important}.pipeline-deck.mode-data .pipeline-data{display:block!important}
+ .atelier-sheet-head{position:fixed;z-index:1251;top:35dvh;left:0;right:0;height:48px;background:#202923;color:#eef4ea;border-radius:18px 18px 0 0;padding:0 14px 0 20px;align-items:center;justify-content:space-between;box-shadow:0 -12px 35px #0003}
+ body[data-atelier-panel]:not([data-atelier-panel=none]) .atelier-sheet-head{display:flex}
+ .atelier-sheet-head strong{font:700 11px var(--mono);letter-spacing:.09em}.atelier-sheet-head button{width:35px;height:35px;border:1px solid #576459;border-radius:50%;background:transparent;color:#eaf0e8;font-size:17px}
+ .atelier-toast{position:fixed;z-index:1400;top:73px;left:18px;right:18px;padding:10px 13px;background:#202a21;color:#f1f5eb;border-radius:9px;font:10px/1.4 var(--mono);box-shadow:0 5px 20px #0005;pointer-events:none}
+ .atelier-toast.visible{display:block}.crop-toolbar.visible{top:69px;z-index:1270}
+ .editorial-session-panel p{font-size:10px}.editorial-session-buttons{display:flex;overflow-x:auto}.editorial-session-buttons button{min-width:130px}
+}
+
 </style>
 </head>
 <body>
@@ -1546,6 +1591,21 @@ function installMobileNavigation(){
 function syncStudioHeaderHeight(){const h=document.querySelector('header')?.getBoundingClientRect().height||62;document.documentElement.style.setProperty('--mobile-header-height',h+'px')}
 
 organizeStudioUI();installMobileNavigation();initEditorialSessions();setupStudioSplit();labSetup();syncStudioHeaderHeight();window.addEventListener('resize',syncStudioHeaderHeight);imageSource=drawDemo();buildPaletteUI();loadSteps([]);buildStackUI();refreshStackPresetsUI();readLibrary();renderLibraryUI();updateBatchUI();syncUI();applySource();ready=true;setupMiniPreview();$('miniJump').addEventListener('click',()=>{$('previewShell').scrollIntoView({behavior:'smooth',block:'center'})});scheduleRender(true); /* start with an intentionally empty effect stack */
+
+function installAtelierUI(){
+ const top=document.createElement('div');top.className='atelier-top';top.innerHTML='<div class="atelier-brand"><strong>GLITCH<span>/</span>ATELIER</strong><small>IMAGE IN MOTION · TEST 01</small></div><button type="button" id="atelierImport" aria-label="Wybierz zdjęcie" title="Wybierz zdjęcie">＋</button><button type="button" id="atelierCamera" aria-label="Otwórz aparat LIVE" title="Aparat LIVE">◉</button><button type="button" id="atelierSave" class="atelier-save">ZAPISZ ↗</button>';document.body.append(top);
+ const quick=document.createElement('div');quick.className='atelier-quick';quick.innerHTML='<button type="button" id="atelierCompare">◐ ORYGINAŁ</button><button type="button" id="atelierCrop">⌗ KADR</button><button type="button" id="atelierQueue">▤ KOLEJKA</button><button type="button" id="atelierMore">⋯ WIĘCEJ</button>';$('previewShell').after(quick);
+ const head=document.createElement('div');head.className='atelier-sheet-head';head.innerHTML='<strong id="atelierSheetTitle"></strong><button type="button" id="atelierClose" aria-label="Zamknij panel">×</button>';document.body.append(head);
+ const nav=document.createElement('nav');nav.className='atelier-nav';nav.setAttribute('aria-label','Nawigacja aplikacji');nav.innerHTML='<button type="button" data-panel="none" aria-selected="true"><b>◉</b>OBRAZ</button><button type="button" data-panel="effects" aria-selected="false"><b>✳</b>EFEKTY</button><button type="button" data-panel="stack" aria-selected="false"><b>≋</b>WARSTWY</button><button type="button" data-panel="library" aria-selected="false"><b>▧</b>BIBLIOTEKA</button>';document.body.append(nav);
+ const toast=document.createElement('div');toast.className='atelier-toast';toast.setAttribute('aria-live','polite');document.body.append(toast);let toastTimer=0;
+ new MutationObserver(()=>{const msg=$('notice').textContent.trim();if(!msg)return;toast.textContent=msg;toast.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('visible'),3200)}).observe($('notice'),{childList:true,subtree:true,characterData:true});
+ const titles={effects:'01 / BIBLIOTEKA EFEKTÓW',stack:'02 / WARSTWY OBRAZU',library:'03 / MOJE RECEPTURY',queue:'04 / KOLEJKA ZDJĘĆ',more:'05 / NARZĘDZIA'};
+ function panel(name){document.body.dataset.atelierPanel=name;nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.panel===name)));if(name==='queue'||name==='more')nav.querySelector('[data-panel="none"]').setAttribute('aria-selected','true');$('atelierSheetTitle').textContent=titles[name]||'';if(name==='stack')$('showPipeline').click();if(name==='library'||name==='more')$('showData').click();const pane=name==='effects'||name==='queue'?document.querySelector('.sidebar.scrollpanel'):$('pipelineDeck');if(pane)pane.scrollTop=0;requestAnimationFrame(()=>{if(name==='queue')$('batchQueue').closest('section').scrollIntoView({block:'start'});if(name==='library')$('libraryList').closest('section').scrollIntoView({block:'start'});if(name==='none')fitStage()})}
+ nav.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>panel(b.dataset.panel)));$('atelierClose').onclick=()=>panel('none');$('atelierImport').onclick=()=>$('upload').click();$('atelierCamera').onclick=()=>$('cameraOpen').click();$('atelierSave').onclick=()=>$('exportTop').click();$('atelierQueue').onclick=()=>panel('queue');$('atelierMore').onclick=()=>panel('more');$('atelierCrop').onclick=()=>{panel('none');enterCropEdit()};
+ const compare=$('atelierCompare');compare.addEventListener('pointerdown',e=>{hideGlitch=true;applyCompare();compare.setPointerCapture?.(e.pointerId)});for(const ev of ['pointerup','pointercancel','lostpointercapture'])compare.addEventListener(ev,()=>{hideGlitch=false;applyCompare()});
+ document.body.dataset.atelierPanel='none';window.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.dataset.atelierPanel!=='none')panel('none')});
+}
+installAtelierUI();
 
 /* GLITCH / CAMERA v33: permission-aware LIVE preview with an independent Android system-camera fallback.
  * Camera capture works via <input capture> even when getUserMedia is blocked in a preview iframe/WebView.
